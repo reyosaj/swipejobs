@@ -25,9 +25,9 @@ public interface Criteria<E, T> {
 	 *            Generic element E
 	 * @param t
 	 *            Generic element T
-	 * @return range of the integer value may vary based the algorithm used.
+	 * @return range of the float value may vary based the algorithm used.
 	 */
-	public int compute(E e, T t);
+	public float compute(E e, T t);
 
 	/**
 	 * @return the type/name used to identify the Criteria. All implementation

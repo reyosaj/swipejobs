@@ -33,7 +33,7 @@ public class Criterions {
 	public static final Criteria<Worker, Job> DrivingLicence = new Criteria<Worker, Job>() {
 
 		@Override
-		public int compute(Worker w, Job j) {
+		public float compute(Worker w, Job j) {
 			if(j.isDriverLicenseRequired()) {
 				return w.isHasDriversLicense() ? 1 : 0;
 			}
@@ -60,13 +60,13 @@ public class Criterions {
 	public static final Criteria<Worker, Job> Certificates = new Criteria<Worker, Job>() {
 
 		@Override
-		public int compute(Worker w, Job j) {
+		public float compute(Worker w, Job j) {
 			List<String> workerCerts = w.getCertificates();
 			int required = j.getRequiredCertificates().size();
 			int matchedCount = (int) j.getRequiredCertificates().stream()
 					.filter(p -> workerCerts.contains(p))
 					.count();
-			return (matchedCount > 0 && required > 0) ? (matchedCount / required) : 0;
+			return (matchedCount > 0 && required > 0) ? ((float)matchedCount / required) : 0.0f;
 		}
 
 		@Override
@@ -81,7 +81,7 @@ public class Criterions {
 	public static final Criteria<Worker, Job> Location = new Criteria<Worker, Job>() {
 
 		@Override
-		public int compute(Worker e, Job t) {
+		public float compute(Worker e, Job t) {
 			// TODO add location matching algo here.
 			return 0;
 		}

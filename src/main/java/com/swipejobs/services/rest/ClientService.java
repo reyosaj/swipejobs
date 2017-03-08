@@ -89,6 +89,8 @@ public class ClientService {
 				} else {
 					result = new RestResult<>(jobs);
 				}
+			} else {
+				result = new RestResult<>(response.getStatusCode(), "Unknow Error");
 			}
 		} catch (RestClientException e) {
 			log.error(String.format("Err in getJobs() - %s", e.getMessage()));
