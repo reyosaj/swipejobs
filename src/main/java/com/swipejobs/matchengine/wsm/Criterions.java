@@ -5,8 +5,13 @@ package com.swipejobs.matchengine.wsm;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.swipejobs.matchengine.Criteria;
+import com.swipejobs.matchengine.geo.DistanceCalculator;
 import com.swipejobs.services.rest.response.Job;
+import com.swipejobs.services.rest.response.SearchAddress;
 import com.swipejobs.services.rest.response.Worker;
 
 /**
@@ -19,6 +24,8 @@ import com.swipejobs.services.rest.response.Worker;
  *
  */
 public class Criterions {
+	
+	public static final Logger log = LoggerFactory.getLogger(Criterions.class);
 	
 	//singleton
 	private Criterions() {
@@ -76,14 +83,50 @@ public class Criterions {
 	};
 	
 	/**
-	 * Implementation Criteria for Geo Location Criteria.
+	 * Implementation Criteria for Geo Location Criteria. <br>
+	 * <br>
+	 * This Criteria finds the location score based on the <code>Worker</code>
+	 * preference and the <code>Job</code> location <br>
+	 * <br>
+	 * The <i>compute</i> method will normalize the distance to a score between
+	 * 0 and 1, where 0 stands for a bad match and 1 stands for a good match.
+	 * <br>
 	 */
 	public static final Criteria<Worker, Job> Location = new Criteria<Worker, Job>() {
 
 		@Override
-		public float compute(Worker e, Job t) {
-			// TODO add location matching algo here.
-			return 0;
+		public float compute(Worker w, Job j) {
+			SearchAddress wAdd = w.getJobSearchAddress();
+			com.swipejobs.services.rest.response.Location jLoc = j.getLocation();
+			if(wAdd == null || jLoc == null) {
+				// location preference is not available. no need to proceed 
+				return 1;
+			}
+			
+			
+			double mMaxDistance = (double)wAdd.getMaxJobDistance();
+			double distance = 0.0;
+			try {
+				double lat1 = Double.valueOf(wAdd.getLatitude());
+				double lon1 = Double.valueOf(wAdd.getLongitude());
+				
+				double lat2 = Double.valueOf(jLoc.getLatitude());
+				double lon2 = Double.valueOf(jLoc.getLongitude());
+				String unit = "K";
+				if(wAdd.getUnit() != null) {
+					unit = wAdd.getUnit().equalsIgnoreCase("KM") ? "K" : "M"; 
+				}
+				
+				//calculate to distance between two points.
+				distance = DistanceCalculator.distance(lat1, lon1, lat2, lon2, unit);
+			} catch (NumberFormatException e) {
+				log.error(String.format("error calculating distance for %s", j.getJobId()));
+				return 0;
+			}
+			
+			// the distance is normalized between 0 and 1
+			float diff = (float) (mMaxDistance - distance);
+			return Float.min(Float.max(diff, 0.0f), 1.0f);
 		}
 
 		@Override

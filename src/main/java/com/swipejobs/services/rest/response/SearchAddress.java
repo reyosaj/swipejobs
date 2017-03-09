@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SearchAddress {
 	private String unit;
-	private int maxJobDistance;
+	private int maxJobDistance = 0;
 	private String longitude;
 	private String latitude;
 	/**
